@@ -8,5 +8,6 @@ export interface RobotData {
   risk_level: "LOW" | "MEDIUM" | "HIGH";
   risk_score: number;
   confidence: number;
+  battery: number;
   timestamp: string;
 }

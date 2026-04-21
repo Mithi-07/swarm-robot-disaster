@@ -29,6 +29,7 @@ export default function SensorCharts({ robots }: SensorChartsProps) {
     vibration: r.vibration,
     tilt: r.tilt,
     risk_score: r.risk_score,
+    battery: r.battery,
   }));
 
   const charts = [
@@ -53,6 +54,13 @@ export default function SensorCharts({ robots }: SensorChartsProps) {
       color: "#8b5cf6",
       gradientId: "tiltGrad",
     },
+    {
+      title: "Battery Level",
+      dataKey: "battery",
+      unit: "%",
+      color: "#22c55e",
+      gradientId: "battGrad",
+    },
   ];
 
   return (
@@ -64,7 +72,7 @@ export default function SensorCharts({ robots }: SensorChartsProps) {
         <h3 className="text-sm font-semibold text-slate-200">Sensor Data Trends</h3>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {charts.map((chart) => (
           <div
             key={chart.dataKey}

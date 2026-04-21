@@ -7,7 +7,7 @@ import TabSwitcher from "@/components/TabSwitcher";
 import HighRiskAlerts from "@/components/HighRiskAlerts";
 import RiskSummaryCards from "@/components/RiskSummaryCards";
 import RobotMap from "@/components/RobotMap";
-import TelemetryTable from "@/components/TelemetryTable";
+import TelemetryDashboard from "@/components/TelemetryTable";
 import SensorCharts from "@/components/SensorCharts";
 
 export default function Home() {
@@ -95,7 +95,7 @@ export default function Home() {
         {/* Tab 2: Robot Telemetry */}
         {activeTab === 1 && (
           <div className="animate-fade-in space-y-6">
-            <TelemetryTable robots={data} />
+            <TelemetryDashboard robots={data} />
             <SensorCharts robots={data} />
           </div>
         )}

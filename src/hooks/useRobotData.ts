@@ -60,6 +60,7 @@ export function useRobotData(pollInterval: number = 2000): UseRobotDataReturn {
         risk_level: (String(r.risk_level || "LOW") as RobotData["risk_level"]),
         risk_score: Number(r.risk_score) || 0,
         confidence: Number(r.confidence) || 0,
+        battery: r.battery !== undefined ? Number(r.battery) : 100,
         timestamp: String(r.timestamp || ""),
       }));
 
