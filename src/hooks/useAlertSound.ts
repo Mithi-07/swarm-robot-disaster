@@ -6,12 +6,10 @@ interface UseAlertSoundReturn {
   isAlerting: boolean;
   alertReasons: string[];
   acknowledge: () => void;
-  audioUnlocked: boolean;
 }
 
 /**
- * Generate a WAV file as a Blob URL for reliable cross-browser playback.
- * Creates a simple warning tone.
+ * Generate a WAV file as a Blob URL for reliable playback.
  */
 function generateAlertWav(isCritical: boolean): string {
   const sampleRate = 22050;
@@ -20,7 +18,6 @@ function generateAlertWav(isCritical: boolean): string {
   const buffer = new ArrayBuffer(44 + numSamples * 2);
   const view = new DataView(buffer);
 
-  // WAV header
   const writeString = (offset: number, str: string) => {
     for (let i = 0; i < str.length; i++) {
       view.setUint8(offset + i, str.charCodeAt(i));
@@ -40,22 +37,17 @@ function generateAlertWav(isCritical: boolean): string {
   writeString(36, "data");
   view.setUint32(40, numSamples * 2, true);
 
-  // Generate tone samples
   for (let i = 0; i < numSamples; i++) {
     const t = i / sampleRate;
     let sample: number;
-
     if (isCritical) {
-      // Two-tone siren: alternates between 880Hz and 660Hz
       const freq = t < 0.2 ? 880 : t < 0.4 ? 660 : t < 0.6 ? 880 : 660;
       const envelope = Math.min(1, (duration - t) * 5) * Math.min(1, t * 20);
       sample = Math.sin(2 * Math.PI * freq * t) * 0.4 * envelope;
     } else {
-      // Single warning beep at 660Hz
       const envelope = Math.min(1, (duration - t) * 4) * Math.min(1, t * 20);
       sample = Math.sin(2 * Math.PI * 660 * t) * 0.35 * envelope;
     }
-
     const intSample = Math.max(-32768, Math.min(32767, Math.floor(sample * 32767)));
     view.setInt16(44 + i * 2, intSample, true);
   }
@@ -65,113 +57,101 @@ function generateAlertWav(isCritical: boolean): string {
 }
 
 /**
- * Continuous alert sound that plays in a loop until acknowledged.
- * Triggers on HIGH risk robots or low battery (≤20%).
- * Uses HTML Audio element for reliable cross-browser playback.
+ * Persistent alert sound hook.
+ * - Plays a looping alarm when HIGH risk or low battery is detected
+ * - Stops when user clicks "Acknowledge"
+ * - Re-triggers when alert conditions CHANGE (e.g., new robot enters HIGH risk)
+ * - Does NOT re-trigger if data is the same after acknowledgment
  */
 export function useAlertSound(
   hasHighRisk: boolean,
   lowBatteryRobots: string[],
   criticalBatteryRobots: string[]
 ): UseAlertSoundReturn {
-  const [acknowledged, setAcknowledged] = useState(false);
-  const [audioUnlocked, setAudioUnlocked] = useState(false);
-  const [prevAlertKey, setPrevAlertKey] = useState("");
+  const [acknowledgedKey, setAcknowledgedKey] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const warningUrlRef = useRef<string>("");
   const criticalUrlRef = useRef<string>("");
+  const userInteractedRef = useRef(false);
 
-  // Generate audio URLs once
+  // Generate audio blobs once on mount
   useEffect(() => {
     warningUrlRef.current = generateAlertWav(false);
     criticalUrlRef.current = generateAlertWav(true);
-
     return () => {
       if (warningUrlRef.current) URL.revokeObjectURL(warningUrlRef.current);
       if (criticalUrlRef.current) URL.revokeObjectURL(criticalUrlRef.current);
     };
   }, []);
 
-  // Unlock audio on any user interaction
+  // Track user interaction to unlock audio
   useEffect(() => {
-    const unlock = () => {
-      setAudioUnlocked(true);
-      // Create a silent audio element to unlock autoplay
-      const silentAudio = new Audio();
-      silentAudio.volume = 0;
-      silentAudio.play().catch(() => {});
+    const markInteracted = () => {
+      userInteractedRef.current = true;
     };
-
-    document.addEventListener("click", unlock, { once: true });
-    document.addEventListener("touchstart", unlock, { once: true });
-    document.addEventListener("keydown", unlock, { once: true });
-
+    document.addEventListener("click", markInteracted);
+    document.addEventListener("touchstart", markInteracted);
+    document.addEventListener("keydown", markInteracted);
     return () => {
-      document.removeEventListener("click", unlock);
-      document.removeEventListener("touchstart", unlock);
-      document.removeEventListener("keydown", unlock);
+      document.removeEventListener("click", markInteracted);
+      document.removeEventListener("touchstart", markInteracted);
+      document.removeEventListener("keydown", markInteracted);
     };
   }, []);
 
-  // Build list of reasons
+  // Build alert reasons
   const alertReasons: string[] = [];
-  if (hasHighRisk) {
-    alertReasons.push("🔴 High risk zone detected");
-  }
-  criticalBatteryRobots.forEach((id) => {
-    alertReasons.push(`⚠️ ${id} — Battery critically low`);
-  });
-  lowBatteryRobots.forEach((id) => {
-    alertReasons.push(`🔋 ${id} — Battery low`);
-  });
+  if (hasHighRisk) alertReasons.push("🔴 High risk zone detected");
+  criticalBatteryRobots.forEach((id) =>
+    alertReasons.push(`⚠️ ${id} — Battery critically low`)
+  );
+  lowBatteryRobots.forEach((id) =>
+    alertReasons.push(`🔋 ${id} — Battery low`)
+  );
 
   const shouldAlert = alertReasons.length > 0;
 
-  // Create a unique key for the current alert state
-  const alertKey = [
-    hasHighRisk ? "HIGH" : "",
-    ...criticalBatteryRobots,
-    ...lowBatteryRobots,
-  ]
-    .filter(Boolean)
-    .sort()
-    .join("|");
+  // A fingerprint of current alert state — changes when conditions change
+  const currentAlertKey = shouldAlert
+    ? [
+        hasHighRisk ? "HIGH" : "",
+        ...criticalBatteryRobots.map((id) => `CRIT:${id}`),
+        ...lowBatteryRobots.map((id) => `LOW:${id}`),
+      ]
+        .filter(Boolean)
+        .sort()
+        .join("|")
+    : "";
 
-  // When alert conditions change (new robot enters alert), reset acknowledgement
-  useEffect(() => {
-    if (alertKey !== prevAlertKey && alertKey !== "") {
-      setAcknowledged(false);
-      setPrevAlertKey(alertKey);
-    }
-  }, [alertKey, prevAlertKey]);
+  // Is the current alert acknowledged?
+  const isAcknowledged = acknowledgedKey === currentAlertKey;
+  const isAlerting = shouldAlert && !isAcknowledged;
 
+  // Play a single beep
   const playBeep = useCallback((isCritical: boolean) => {
+    if (!userInteractedRef.current) return;
+
     try {
       const url = isCritical ? criticalUrlRef.current : warningUrlRef.current;
       if (!url) return;
 
-      // Stop previous
+      // Stop any current playback
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
 
       const audio = new Audio(url);
-      audio.volume = 0.6;
+      audio.volume = 0.7;
       audioRef.current = audio;
-
-      const playPromise = audio.play();
-      if (playPromise) {
-        playPromise.catch(() => {
-          // Autoplay blocked — will work after user interaction
-        });
-      }
+      audio.play().catch(() => {});
     } catch {
-      // Audio not available
+      // Audio unavailable
     }
   }, []);
 
+  // Stop looping sound
   const stopSound = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -184,45 +164,45 @@ export function useAlertSound(
     }
   }, []);
 
-  const startSound = useCallback(
-    (isCritical: boolean) => {
-      // Don't start if already playing
-      if (intervalRef.current) return;
+  // Main effect: start or stop sound based on alert state
+  useEffect(() => {
+    if (isAlerting) {
+      const isCritical = hasHighRisk || criticalBatteryRobots.length > 0;
+
+      // Clear any existing interval first
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
 
       // Play immediately
       playBeep(isCritical);
 
-      // Then repeat every 2.5 seconds
+      // Loop every 2.5 seconds
       intervalRef.current = setInterval(() => {
         playBeep(isCritical);
       }, 2500);
-    },
-    [playBeep]
-  );
-
-  useEffect(() => {
-    const hasCritical = hasHighRisk || criticalBatteryRobots.length > 0;
-
-    if (shouldAlert && !acknowledged) {
-      startSound(hasCritical);
     } else {
       stopSound();
     }
 
     return () => {
-      stopSound();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
-  }, [shouldAlert, acknowledged, hasHighRisk, criticalBatteryRobots.length, startSound, stopSound]);
+  }, [isAlerting, hasHighRisk, criticalBatteryRobots.length, playBeep, stopSound]);
 
+  // Acknowledge: store which alert key was acknowledged
   const acknowledge = useCallback(() => {
-    setAcknowledged(true);
+    setAcknowledgedKey(currentAlertKey);
     stopSound();
-  }, [stopSound]);
+  }, [currentAlertKey, stopSound]);
 
   return {
-    isAlerting: shouldAlert && !acknowledged,
+    isAlerting,
     alertReasons,
     acknowledge,
-    audioUnlocked,
   };
 }

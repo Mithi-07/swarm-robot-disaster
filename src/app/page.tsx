@@ -39,7 +39,7 @@ export default function Home() {
   );
 
   // Persistent alert sound
-  const { isAlerting, alertReasons, acknowledge, audioUnlocked } = useAlertSound(
+  const { isAlerting, alertReasons, acknowledge } = useAlertSound(
     highRiskCount > 0,
     lowBatteryRobots,
     criticalBatteryRobots
@@ -106,16 +106,9 @@ export default function Home() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-red-300">
                 🔔 Active Alert — Immediate Attention Required
-                {!audioUnlocked && (
-                  <span className="ml-2 text-xs font-normal text-red-400/60">
-                    (click anywhere to enable sound)
-                  </span>
-                )}
-                {audioUnlocked && (
-                  <span className="ml-2 text-xs font-normal text-red-400/60">
-                    🔊 Sound active
-                  </span>
-                )}
+                <span className="ml-2 text-xs font-normal text-red-400/60">
+                  🔊 Sound active
+                </span>
               </p>
               <div className="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5">
                 {alertReasons.map((reason, i) => (
