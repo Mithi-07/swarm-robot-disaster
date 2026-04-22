@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRobotData } from "@/hooks/useRobotData";
+import { useAlertSound } from "@/hooks/useAlertSound";
 import Header from "@/components/Header";
 import TabSwitcher from "@/components/TabSwitcher";
 import HighRiskAlerts from "@/components/HighRiskAlerts";
@@ -23,6 +24,26 @@ export default function Home() {
   } = useRobotData(2000);
 
   const [activeTab, setActiveTab] = useState(0);
+
+  // Compute battery alerts
+  const lowBatteryRobots = useMemo(
+    () =>
+      data
+        .filter((r) => r.battery > 10 && r.battery <= 20)
+        .map((r) => r.robot_id),
+    [data]
+  );
+  const criticalBatteryRobots = useMemo(
+    () => data.filter((r) => r.battery <= 10).map((r) => r.robot_id),
+    [data]
+  );
+
+  // Persistent alert sound
+  const { isAlerting, alertReasons, acknowledge } = useAlertSound(
+    highRiskCount > 0,
+    lowBatteryRobots,
+    criticalBatteryRobots
+  );
 
   // Loading state
   if (loading && data.length === 0) {
@@ -60,6 +81,62 @@ export default function Home() {
         robotCount={data.length}
         isLive={!error}
       />
+
+      {/* Persistent Alert Banner — stays until user acknowledges */}
+      {isAlerting && (
+        <div className="relative z-50 border-b border-red-500/30 bg-gradient-to-r from-red-900/40 via-red-800/30 to-red-900/40">
+          <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+            {/* Pulsing alert icon */}
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="relative flex h-4 w-4">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500" />
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-5 w-5 animate-bounce text-red-400"
+              >
+                <path d="M10 2a6 6 0 00-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 00.515 1.076 32.91 32.91 0 003.256.508 3.5 3.5 0 006.972 0 32.903 32.903 0 003.256-.508.75.75 0 00.515-1.076A11.448 11.448 0 0116 8a6 6 0 00-6-6zM8.05 14.943a33.54 33.54 0 003.9 0 2 2 0 01-3.9 0z" />
+              </svg>
+            </div>
+
+            {/* Alert reasons */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-red-300">
+                🔔 Active Alert — Immediate Attention Required
+              </p>
+              <div className="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5">
+                {alertReasons.map((reason, i) => (
+                  <span key={i} className="text-xs text-red-400/80">
+                    {reason}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Acknowledge button */}
+            <button
+              onClick={acknowledge}
+              className="shrink-0 rounded-lg border border-red-500/40 bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-300 transition-all hover:bg-red-500/30 hover:text-white hover:shadow-lg hover:shadow-red-500/10 active:scale-95"
+            >
+              <span className="flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path d="M15.477 3.106a.75.75 0 01-.104 1.058L9.298 8.965c-.18.145-.29.36-.29.59v3.082a.75.75 0 01-1.5 0v-3.082A2.25 2.25 0 018.392 7.74l6.027-4.802a.75.75 0 011.058.168z" />
+                  <path d="M3.5 8A5.5 5.5 0 019 2.5a.75.75 0 010 1.5A4 4 0 005 8a.75.75 0 01-1.5 0zM17 8a.75.75 0 01-.75.75A4 4 0 0012.26 12a.75.75 0 11-1.5 0A5.5 5.5 0 0117 8z" />
+                </svg>
+                Acknowledge
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Error banner */}
       {error && (

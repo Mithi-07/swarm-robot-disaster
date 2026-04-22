@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import type { RobotData } from "@/types/robot";
-import { playAlertSound } from "@/utils/helpers";
 
 interface HighRiskAlertsProps {
   robots: RobotData[];
@@ -12,17 +11,11 @@ interface HighRiskAlertsProps {
 export default function HighRiskAlerts({ robots, newHighRisk }: HighRiskAlertsProps) {
   const highRiskRobots = robots.filter((r) => r.risk_level === "HIGH");
   const containerRef = useRef<HTMLDivElement>(null);
-  const hasPlayedSound = useRef(false);
 
   useEffect(() => {
-    if (newHighRisk && !hasPlayedSound.current) {
-      playAlertSound();
-      hasPlayedSound.current = true;
+    if (newHighRisk) {
       // Auto-scroll to alert section
       containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      setTimeout(() => {
-        hasPlayedSound.current = false;
-      }, 5000);
     }
   }, [newHighRisk]);
 
