@@ -3,10 +3,12 @@
 import { useState, useMemo } from "react";
 import { useRobotData } from "@/hooks/useRobotData";
 import { useAlertSound } from "@/hooks/useAlertSound";
+import { useEarthquakeDetection } from "@/hooks/useEarthquakeDetection";
 import Header from "@/components/Header";
 import TabSwitcher from "@/components/TabSwitcher";
 import HighRiskAlerts from "@/components/HighRiskAlerts";
 import RiskSummaryCards from "@/components/RiskSummaryCards";
+import EarthquakeAlert from "@/components/EarthquakeAlert";
 import RobotMap from "@/components/RobotMap";
 import TelemetryDashboard from "@/components/TelemetryTable";
 import SensorCharts from "@/components/SensorCharts";
@@ -37,6 +39,9 @@ export default function Home() {
     () => data.filter((r) => r.battery <= 10).map((r) => r.robot_id),
     [data]
   );
+
+  // Earthquake detection
+  const earthquakeStatus = useEarthquakeDetection(data);
 
   // Persistent alert sound
   const { isAlerting, alertReasons, acknowledge } = useAlertSound(
@@ -168,6 +173,7 @@ export default function Home() {
               mediumCount={mediumRiskCount}
               highCount={highRiskCount}
             />
+            <EarthquakeAlert status={earthquakeStatus} />
             <RobotMap robots={data} />
           </div>
         )}
