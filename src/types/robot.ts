@@ -9,5 +9,7 @@ export interface RobotData {
   risk_score: number;
   confidence: number;
   battery: number;
+  earthquake_risk: "LOW" | "MEDIUM" | "HIGH";
+  earthquake_score: number;
   timestamp: string;
 }

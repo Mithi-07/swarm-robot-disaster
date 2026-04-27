@@ -14,7 +14,7 @@ export default function Header({ lastUpdated, robotCount, isLive }: HeaderProps)
       {/* Animated background effect */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.08),transparent_60%)]" />
 
-      <div className="relative mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-5 sm:flex-row sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-5 pl-14 sm:flex-row sm:px-6 sm:pl-14 lg:px-8 lg:pl-14">
         <div className="flex items-center gap-3">
           {/* Shield Icon */}
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-500/20">
@@ -36,7 +36,7 @@ export default function Header({ lastUpdated, robotCount, isLive }: HeaderProps)
               DisasterShield
             </h1>
             <p className="text-xs text-slate-400">
-              Real-time Landslide Risk Monitoring System
+              Real-time Disaster Risk Monitoring System
             </p>
           </div>
         </div>

@@ -61,6 +61,8 @@ export function useRobotData(pollInterval: number = 2000): UseRobotDataReturn {
         risk_score: Number(r.risk_score) || 0,
         confidence: Number(r.confidence) || 0,
         battery: r.battery !== undefined ? Number(r.battery) : 100,
+        earthquake_risk: (String(r.earthquake_risk || "LOW") as RobotData["earthquake_risk"]),
+        earthquake_score: Number(r.earthquake_score) || 0,
         timestamp: String(r.timestamp || ""),
       }));
 
