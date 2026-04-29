@@ -23,7 +23,7 @@ export default function Home() {
     mediumRiskCount,
     lowRiskCount,
     newHighRisk,
-  } = useRobotData(2000);
+  } = useRobotData(1000);
 
   const [activePage, setActivePage] = useState<NavPage>("home");
 
