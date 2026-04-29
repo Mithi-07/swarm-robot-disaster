@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useTheme, type Theme } from "@/hooks/useTheme";
 
-export type NavPage = "home" | "landslide" | "earthquake" | "telemetry";
+export type NavPage = "home" | "landslide" | "earthquake" | "telemetry" | "settings" | "about";
 
 interface SidebarProps {
   activePage: NavPage;
   onNavigate: (page: NavPage) => void;
 }
 
-const navItems: { id: NavPage; label: string; icon: React.ReactNode; description: string }[] = [
+const monitoringItems: { id: NavPage; label: string; icon: React.ReactNode; description: string }[] = [
   {
     id: "home",
     label: "Dashboard",
@@ -53,39 +52,59 @@ const navItems: { id: NavPage; label: string; icon: React.ReactNode; description
   },
 ];
 
-const themeOptions: { id: Theme; label: string; icon: React.ReactNode }[] = [
+const systemItems: { id: NavPage; label: string; icon: React.ReactNode; description: string }[] = [
   {
-    id: "system",
-    label: "System",
+    id: "settings",
+    label: "Settings",
+    description: "Theme & Preferences",
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-        <path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5zm1.5 0a.75.75 0 01.75-.75h11.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75H4.25a.75.75 0 01-.75-.75v-7.5z" clipRule="evenodd" />
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+        <path fillRule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
       </svg>
     ),
   },
   {
-    id: "dark",
-    label: "Dark",
+    id: "about",
+    label: "About",
+    description: "System Information",
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-        <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 01.26.77 7 7 0 009.958 7.967.75.75 0 011.067.853A8.5 8.5 0 116.647 1.921a.75.75 0 01.808.083z" clipRule="evenodd" />
-      </svg>
-    ),
-  },
-  {
-    id: "light",
-    label: "Light",
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-        <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 5.404a.75.75 0 10-1.06-1.06l-1.061 1.06a.75.75 0 001.06 1.06l1.06-1.06zM6.464 14.596a.75.75 0 10-1.06-1.06l-1.06 1.06a.75.75 0 001.06 1.06l1.06-1.06zM18 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0118 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10zM14.596 15.657a.75.75 0 001.06-1.06l-1.06-1.061a.75.75 0 10-1.06 1.06l1.06 1.06zM5.404 6.464a.75.75 0 001.06-1.06l-1.06-1.06a.75.75 0 10-1.06 1.06l1.06 1.06z" />
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
       </svg>
     ),
   },
 ];
 
+function NavItem({ item, isActive, onClick }: { item: typeof monitoringItems[0]; isActive: boolean; onClick: () => void }) {
+  return (
+    <li>
+      <button
+        onClick={onClick}
+        className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 ${
+          isActive ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/10 shadow-sm shadow-blue-500/10" : ""
+        }`}
+        style={{ color: isActive ? "var(--text-primary)" : "var(--text-muted)" }}
+      >
+        <div
+          className={`flex h-9 w-9 items-center justify-center rounded-lg ${isActive ? "bg-blue-500/20 text-blue-400" : ""}`}
+          style={!isActive ? { background: "var(--bg-card)", color: "var(--text-faint)" } : {}}
+        >
+          {item.icon}
+        </div>
+        <div>
+          <div className="text-sm font-semibold" style={{ color: isActive ? "var(--text-primary)" : "var(--text-secondary)" }}>
+            {item.label}
+          </div>
+          <div className="text-[10px]" style={{ color: "var(--text-faint)" }}>{item.description}</div>
+        </div>
+        {isActive && <div className="ml-auto h-2 w-2 rounded-full bg-blue-400" />}
+      </button>
+    </li>
+  );
+}
+
 export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
 
   return (
     <>
@@ -93,11 +112,7 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
       <button
         onClick={() => setIsOpen(true)}
         className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl backdrop-blur-md border transition-all hover:shadow-lg"
-        style={{
-          background: "var(--bg-card)",
-          borderColor: "var(--border-color)",
-          color: "var(--text-secondary)",
-        }}
+        style={{ background: "var(--bg-card)", borderColor: "var(--border-color)", color: "var(--text-secondary)" }}
         aria-label="Open menu"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
@@ -107,10 +122,7 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
 
       {/* Backdrop */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsOpen(false)} />
       )}
 
       {/* Sidebar panel */}
@@ -118,13 +130,10 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
         className={`fixed left-0 top-0 z-[60] h-full w-72 transform border-r backdrop-blur-xl transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{
-          background: "var(--sidebar-bg)",
-          borderColor: "var(--border-color)",
-        }}
+        style={{ background: "var(--sidebar-bg)", borderColor: "var(--border-color)" }}
       >
-        {/* Sidebar header */}
-        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid var(--border-color)` }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-500/20">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-white">
@@ -136,86 +145,40 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
               <p className="text-[10px]" style={{ color: "var(--text-faint)" }}>Navigation</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-            style={{ color: "var(--text-muted)" }}
-            aria-label="Close menu"
-          >
+          <button onClick={() => setIsOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors" style={{ color: "var(--text-muted)" }} aria-label="Close menu">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
             </svg>
           </button>
         </div>
 
-        {/* Nav items */}
+        {/* Monitoring section */}
         <nav className="px-3 py-4">
           <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-faint)" }}>
             Monitoring
           </div>
           <ul className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = activePage === item.id;
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => { onNavigate(item.id); setIsOpen(false); }}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 ${
-                      isActive
-                        ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/10 shadow-sm shadow-blue-500/10"
-                        : ""
-                    }`}
-                    style={{
-                      color: isActive ? "var(--text-primary)" : "var(--text-muted)",
-                    }}
-                  >
-                    <div
-                      className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                        isActive ? "bg-blue-500/20 text-blue-400" : ""
-                      }`}
-                      style={!isActive ? { background: "var(--bg-card)", color: "var(--text-faint)" } : {}}
-                    >
-                      {item.icon}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold" style={{ color: isActive ? "var(--text-primary)" : "var(--text-secondary)" }}>
-                        {item.label}
-                      </div>
-                      <div className="text-[10px]" style={{ color: "var(--text-faint)" }}>{item.description}</div>
-                    </div>
-                    {isActive && <div className="ml-auto h-2 w-2 rounded-full bg-blue-400" />}
-                  </button>
-                </li>
-              );
-            })}
+            {monitoringItems.map((item) => (
+              <NavItem key={item.id} item={item} isActive={activePage === item.id} onClick={() => { onNavigate(item.id); setIsOpen(false); }} />
+            ))}
           </ul>
         </nav>
 
-        {/* Theme switcher */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-faint)" }}>
-            Theme
+        {/* System section */}
+        <nav className="px-3">
+          <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-faint)" }}>
+            System
           </div>
-          <div className="flex gap-1 rounded-xl p-1" style={{ background: "var(--bg-card)" }}>
-            {themeOptions.map((opt) => (
-              <button
-                key={opt.id}
-                onClick={() => setTheme(opt.id)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium transition-all ${
-                  theme === opt.id ? "shadow-sm" : ""
-                }`}
-                style={{
-                  background: theme === opt.id ? "var(--bg-primary)" : "transparent",
-                  color: theme === opt.id ? "var(--text-primary)" : "var(--text-muted)",
-                  border: theme === opt.id ? `1px solid var(--border-color)` : "1px solid transparent",
-                }}
-              >
-                {opt.icon}
-                {opt.label}
-              </button>
+          <ul className="space-y-1">
+            {systemItems.map((item) => (
+              <NavItem key={item.id} item={item} isActive={activePage === item.id} onClick={() => { onNavigate(item.id); setIsOpen(false); }} />
             ))}
-          </div>
-          <p className="mt-3 text-[10px]" style={{ color: "var(--text-faint)" }}>
+          </ul>
+        </nav>
+
+        {/* Footer */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+          <p className="text-[10px]" style={{ color: "var(--text-faint)" }}>
             DisasterShield v2.0 — Swarm Robot Monitoring
           </p>
         </div>

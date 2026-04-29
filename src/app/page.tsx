@@ -12,6 +12,8 @@ import EarthquakeAlert from "@/components/EarthquakeAlert";
 import RobotMap from "@/components/RobotMap";
 import TelemetryDashboard from "@/components/TelemetryTable";
 import SensorCharts from "@/components/SensorCharts";
+import SettingsPage from "@/components/SettingsPage";
+import AboutPage from "@/components/AboutPage";
 
 export default function Home() {
   const {
@@ -80,12 +82,14 @@ export default function Home() {
     );
   }
 
-  const pageTitle = {
+  const pageTitle: Record<NavPage, string> = {
     home: "Dashboard Overview",
     landslide: "Landslide Monitoring",
     earthquake: "Earthquake Detection",
     telemetry: "Robot Telemetry",
-  }[activePage];
+    settings: "Settings",
+    about: "About",
+  };
 
   return (
     <div className="flex min-h-screen flex-col" style={{ background: "var(--bg-primary)" }}>
@@ -202,7 +206,7 @@ export default function Home() {
       <div className="mx-auto w-full max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <div className="w-10 sm:hidden" />
-          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{pageTitle}</h2>
+          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{pageTitle[activePage]}</h2>
           <div className="ml-auto flex gap-2">
             {(["home", "landslide", "earthquake", "telemetry"] as NavPage[]).map((page) => (
               <button
@@ -362,6 +366,12 @@ export default function Home() {
             <TelemetryDashboard robots={data} />
           </div>
         )}
+
+        {/* ===== SETTINGS ===== */}
+        {activePage === "settings" && <SettingsPage />}
+
+        {/* ===== ABOUT ===== */}
+        {activePage === "about" && <AboutPage />}
       </main>
 
       {/* Footer */}
