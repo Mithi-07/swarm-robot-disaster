@@ -77,7 +77,9 @@ export function useRobotData(pollInterval: number = 2000): UseRobotDataReturn {
           robotMap.set(robot.robot_id, robot);
         }
       }
-      const dedupedRobots = Array.from(robotMap.values());
+      const dedupedRobots = Array.from(robotMap.values()).sort((a, b) =>
+        a.robot_id.localeCompare(b.robot_id, undefined, { numeric: true })
+      );
 
       // Check for new HIGH risk robots
       const currentHighRiskIds = new Set(
