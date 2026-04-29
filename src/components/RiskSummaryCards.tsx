@@ -63,7 +63,7 @@ export default function RiskSummaryCards({ lowCount, mediumCount, highCount }: R
               <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${card.iconBg}`}>
                 {card.icon}
               </div>
-              <span className="text-sm font-medium text-slate-300">{card.label}</span>
+              <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>{card.label}</span>
             </div>
             <span className={`text-3xl font-black ${card.textColor}`}>
               {counts[card.key]}

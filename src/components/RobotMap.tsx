@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { RobotData } from "@/types/robot";
 import { calculateMapCenter } from "@/utils/helpers";
+import { useTheme } from "@/hooks/useTheme";
 
 // Dynamic import to avoid SSR issues with Leaflet
 const MapContainer = dynamic(
@@ -41,6 +42,11 @@ function getMarkerColor(level: string): string {
 
 export default function RobotMap({ robots, mode = "landslide", height = "400px", title }: RobotMapProps) {
   const center = useMemo(() => calculateMapCenter(robots), [robots]);
+  const { resolvedTheme } = useTheme();
+
+  const tileUrl = resolvedTheme === "light"
+    ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
   if (typeof window === "undefined") {
     return null;
@@ -79,7 +85,7 @@ export default function RobotMap({ robots, mode = "landslide", height = "400px",
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            url={tileUrl}
           />
           {robots.map((robot) => {
             const riskLevel = mode === "earthquake" ? robot.earthquake_risk : robot.risk_level;

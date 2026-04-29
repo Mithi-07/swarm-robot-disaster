@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme, type Theme } from "@/hooks/useTheme";
 
 export type NavPage = "home" | "landslide" | "earthquake" | "telemetry";
 
@@ -52,15 +53,51 @@ const navItems: { id: NavPage; label: string; icon: React.ReactNode; description
   },
 ];
 
+const themeOptions: { id: Theme; label: string; icon: React.ReactNode }[] = [
+  {
+    id: "system",
+    label: "System",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+        <path fillRule="evenodd" d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5zm1.5 0a.75.75 0 01.75-.75h11.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75H4.25a.75.75 0 01-.75-.75v-7.5z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
+    id: "dark",
+    label: "Dark",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+        <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 01.26.77 7 7 0 009.958 7.967.75.75 0 011.067.853A8.5 8.5 0 116.647 1.921a.75.75 0 01.808.083z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
+    id: "light",
+    label: "Light",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+        <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 5.404a.75.75 0 10-1.06-1.06l-1.061 1.06a.75.75 0 001.06 1.06l1.06-1.06zM6.464 14.596a.75.75 0 10-1.06-1.06l-1.06 1.06a.75.75 0 001.06 1.06l1.06-1.06zM18 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0118 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10zM14.596 15.657a.75.75 0 001.06-1.06l-1.06-1.061a.75.75 0 10-1.06 1.06l1.06 1.06zM5.404 6.464a.75.75 0 001.06-1.06l-1.06-1.06a.75.75 0 10-1.06 1.06l1.06 1.06z" />
+      </svg>
+    ),
+  },
+];
+
 export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   return (
     <>
       {/* Hamburger button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/10 text-slate-300 transition-all hover:bg-white/20 hover:text-white hover:shadow-lg"
+        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl backdrop-blur-md border transition-all hover:shadow-lg"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "var(--border-color)",
+          color: "var(--text-secondary)",
+        }}
         aria-label="Open menu"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
@@ -78,12 +115,16 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
 
       {/* Sidebar panel */}
       <div
-        className={`fixed left-0 top-0 z-[60] h-full w-72 transform border-r border-white/10 bg-[#0a0f1e]/95 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-0 z-[60] h-full w-72 transform border-r backdrop-blur-xl transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{
+          background: "var(--sidebar-bg)",
+          borderColor: "var(--border-color)",
+        }}
       >
         {/* Sidebar header */}
-        <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid var(--border-color)` }}>
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-500/20">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-white">
@@ -91,13 +132,14 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
               </svg>
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">DisasterShield</h2>
-              <p className="text-[10px] text-slate-500">Navigation</p>
+              <h2 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>DisasterShield</h2>
+              <p className="text-[10px]" style={{ color: "var(--text-faint)" }}>Navigation</p>
             </div>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+            style={{ color: "var(--text-muted)" }}
             aria-label="Close menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
@@ -108,7 +150,7 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
 
         {/* Nav items */}
         <nav className="px-3 py-4">
-          <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+          <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-faint)" }}>
             Monitoring
           </div>
           <ul className="space-y-1">
@@ -117,34 +159,31 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
               return (
                 <li key={item.id}>
                   <button
-                    onClick={() => {
-                      onNavigate(item.id);
-                      setIsOpen(false);
-                    }}
+                    onClick={() => { onNavigate(item.id); setIsOpen(false); }}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 ${
                       isActive
-                        ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/10 text-white shadow-sm shadow-blue-500/10"
-                        : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                        ? "bg-gradient-to-r from-blue-500/20 to-cyan-500/10 shadow-sm shadow-blue-500/10"
+                        : ""
                     }`}
+                    style={{
+                      color: isActive ? "var(--text-primary)" : "var(--text-muted)",
+                    }}
                   >
                     <div
-                      className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
-                        isActive
-                          ? "bg-blue-500/20 text-blue-400"
-                          : "bg-white/5 text-slate-500 group-hover:text-slate-400"
+                      className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                        isActive ? "bg-blue-500/20 text-blue-400" : ""
                       }`}
+                      style={!isActive ? { background: "var(--bg-card)", color: "var(--text-faint)" } : {}}
                     >
                       {item.icon}
                     </div>
                     <div>
-                      <div className={`text-sm font-semibold ${isActive ? "text-white" : ""}`}>
+                      <div className="text-sm font-semibold" style={{ color: isActive ? "var(--text-primary)" : "var(--text-secondary)" }}>
                         {item.label}
                       </div>
-                      <div className="text-[10px] text-slate-600">{item.description}</div>
+                      <div className="text-[10px]" style={{ color: "var(--text-faint)" }}>{item.description}</div>
                     </div>
-                    {isActive && (
-                      <div className="ml-auto h-2 w-2 rounded-full bg-blue-400" />
-                    )}
+                    {isActive && <div className="ml-auto h-2 w-2 rounded-full bg-blue-400" />}
                   </button>
                 </li>
               );
@@ -152,9 +191,31 @@ export default function Sidebar({ activePage, onNavigate }: SidebarProps) {
           </ul>
         </nav>
 
-        {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 px-5 py-4">
-          <p className="text-[10px] text-slate-700">
+        {/* Theme switcher */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-faint)" }}>
+            Theme
+          </div>
+          <div className="flex gap-1 rounded-xl p-1" style={{ background: "var(--bg-card)" }}>
+            {themeOptions.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => setTheme(opt.id)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium transition-all ${
+                  theme === opt.id ? "shadow-sm" : ""
+                }`}
+                style={{
+                  background: theme === opt.id ? "var(--bg-primary)" : "transparent",
+                  color: theme === opt.id ? "var(--text-primary)" : "var(--text-muted)",
+                  border: theme === opt.id ? `1px solid var(--border-color)` : "1px solid transparent",
+                }}
+              >
+                {opt.icon}
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-[10px]" style={{ color: "var(--text-faint)" }}>
             DisasterShield v2.0 — Swarm Robot Monitoring
           </p>
         </div>
