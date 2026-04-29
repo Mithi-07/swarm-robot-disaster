@@ -142,6 +142,24 @@ export default function RobotMap({ robots, mode = "landslide", height = "400px",
                           </div>
                         </>
                       )}
+                      <div className="mt-2 border-t border-slate-200 pt-2">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Action:</span>
+                          <span className={`text-[11px] font-bold ${
+                            robot.action_priority === "URGENT" ? "text-red-600" :
+                            robot.action_priority === "HIGH" ? "text-orange-600" :
+                            robot.action_priority === "MEDIUM" ? "text-amber-600" : "text-emerald-600"
+                          }`}>{robot.recommended_action.replace(/_/g, " ")}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Priority:</span>
+                          <span className={`text-[11px] font-bold ${
+                            robot.action_priority === "URGENT" ? "text-red-600" :
+                            robot.action_priority === "HIGH" ? "text-orange-600" :
+                            robot.action_priority === "MEDIUM" ? "text-amber-600" : "text-emerald-600"
+                          }`}>{robot.action_priority}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Popup>

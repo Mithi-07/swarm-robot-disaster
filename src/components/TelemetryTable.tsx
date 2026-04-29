@@ -164,6 +164,30 @@ export default function TelemetryDashboard({ robots }: TelemetryDashboardProps) 
                 </div>
               </div>
 
+              {/* Recommended Action */}
+              <div className="mt-3 flex items-center gap-2 rounded-lg p-2.5" style={{ background: "var(--bg-card)" }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`h-4 w-4 shrink-0 ${
+                  robot.action_priority === "URGENT" ? "text-red-400" :
+                  robot.action_priority === "HIGH" ? "text-orange-400" :
+                  robot.action_priority === "MEDIUM" ? "text-amber-400" : "text-emerald-400"
+                }`}>
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px]" style={{ color: "var(--text-faint)" }}>Recommended Action</div>
+                  <div className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
+                    {robot.recommended_action.replace(/_/g, " ")}
+                  </div>
+                </div>
+                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                  robot.action_priority === "URGENT" ? "bg-red-500/20 text-red-400" :
+                  robot.action_priority === "HIGH" ? "bg-orange-500/20 text-orange-400" :
+                  robot.action_priority === "MEDIUM" ? "bg-amber-500/20 text-amber-400" : "bg-emerald-500/20 text-emerald-400"
+                }`}>
+                  {robot.action_priority}
+                </span>
+              </div>
+
               {/* Footer: Location + Timestamp */}
               <div className="mt-3 flex items-center justify-between text-[10px]" style={{ color: "var(--text-faint)" }}>
                 <span className="font-mono">📍 {robot.latitude.toFixed(4)}, {robot.longitude.toFixed(4)}</span>

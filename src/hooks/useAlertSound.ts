@@ -7,6 +7,7 @@ export interface AlertDetail {
   robotId?: string;
   message: string;
   severity: "critical" | "warning";
+  action?: string;
 }
 
 interface UseAlertSoundReturn {
@@ -99,11 +100,11 @@ class AlertAudio {
  * - Re-triggers when alert conditions CHANGE
  */
 export function useAlertSound(
-  hasHighRisk: boolean,
+  highRiskRobots: string[],
   lowBatteryRobots: string[],
   criticalBatteryRobots: string[],
-  hasEarthquakeAlert: boolean = false,
-  earthquakeRobots: string[] = []
+  earthquakeRobots: string[] = [],
+  robotActions: Record<string, string> = {}
 ): UseAlertSoundReturn {
   const [acknowledgedKey, setAcknowledgedKey] = useState<string | null>(null);
   const audioRef = useRef<AlertAudio | null>(null);
@@ -120,37 +121,47 @@ export function useAlertSound(
   // Build detailed alert reasons
   const alertDetails: AlertDetail[] = [];
 
-  if (hasHighRisk) {
+  // Landslide HIGH risk — per-robot with actual recommended action
+  highRiskRobots.forEach((id) => {
     alertDetails.push({
       type: "high_risk",
-      message: "High landslide risk detected in monitored zone",
+      robotId: id,
+      message: `High landslide risk detected at ${id}`,
       severity: "critical",
+      action: robotActions[id] || "EVACUATE",
     });
-  }
-  if (hasEarthquakeAlert) {
-    earthquakeRobots.forEach((id) => {
-      alertDetails.push({
-        type: "earthquake",
-        robotId: id,
-        message: `Earthquake risk detected at ${id}`,
-        severity: "critical",
-      });
+  });
+
+  // Earthquake HIGH risk — per-robot with actual recommended action
+  earthquakeRobots.forEach((id) => {
+    alertDetails.push({
+      type: "earthquake",
+      robotId: id,
+      message: `High earthquake risk detected at ${id}`,
+      severity: "critical",
+      action: robotActions[id] || "ALERT AUTHORITIES",
     });
-  }
+  });
+
+  // Battery CRITICAL — always RETURN TO BASE regardless of risk action
   criticalBatteryRobots.forEach((id) => {
     alertDetails.push({
       type: "critical_battery",
       robotId: id,
       message: `${id} battery critically low — needs immediate charging`,
       severity: "critical",
+      action: "RETURN TO BASE",
     });
   });
+
+  // Battery LOW — always MONITOR CLOSELY
   lowBatteryRobots.forEach((id) => {
     alertDetails.push({
       type: "low_battery",
       robotId: id,
       message: `${id} battery is low — schedule recharge`,
       severity: "warning",
+      action: "MONITOR CLOSELY",
     });
   });
 
@@ -159,8 +170,7 @@ export function useAlertSound(
   // Fingerprint of current alert state
   const currentAlertKey = shouldAlert
     ? [
-        hasHighRisk ? "HIGH" : "",
-        hasEarthquakeAlert ? "EQ" : "",
+        ...highRiskRobots.map((id) => `LS:${id}`),
         ...earthquakeRobots.map((id) => `EQ:${id}`),
         ...criticalBatteryRobots.map((id) => `CRIT:${id}`),
         ...lowBatteryRobots.map((id) => `LOW:${id}`),
@@ -176,7 +186,7 @@ export function useAlertSound(
   // Start or stop sound
   useEffect(() => {
     if (isAlerting && audioRef.current) {
-      const isCritical = hasHighRisk || criticalBatteryRobots.length > 0 || hasEarthquakeAlert;
+      const isCritical = highRiskRobots.length > 0 || criticalBatteryRobots.length > 0 || earthquakeRobots.length > 0;
       audioRef.current.startLoop(isCritical);
     } else {
       audioRef.current?.stopLoop();
@@ -184,7 +194,7 @@ export function useAlertSound(
     return () => {
       audioRef.current?.stopLoop();
     };
-  }, [isAlerting, hasHighRisk, criticalBatteryRobots.length, hasEarthquakeAlert]);
+  }, [isAlerting, highRiskRobots.length, criticalBatteryRobots.length, earthquakeRobots.length]);
 
   const acknowledge = useCallback(() => {
     setAcknowledgedKey(currentAlertKey);

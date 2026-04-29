@@ -95,6 +95,14 @@ export default function HighRiskAlerts({ robots, newHighRisk }: HighRiskAlertsPr
                     {robot.vibration.toFixed(2)} g
                   </span>
                 </div>
+                <div className="mt-1 border-t border-red-500/10 pt-1.5 flex justify-between text-slate-400">
+                  <span>Action</span>
+                  <span className={`font-bold text-xs ${
+                    robot.action_priority === "URGENT" ? "text-red-400" : "text-orange-400"
+                  }`}>
+                    {robot.recommended_action.replace(/_/g, " ")}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

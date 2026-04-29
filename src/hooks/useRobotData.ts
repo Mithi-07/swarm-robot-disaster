@@ -66,6 +66,8 @@ export function useRobotData(pollInterval: number = 2000): UseRobotDataReturn {
         charging_required: Boolean(r.charging_required),
         earthquake_risk: (String(r.earthquake_risk || "LOW") as RobotData["earthquake_risk"]),
         earthquake_score: Number(r.earthquake_score) || 0,
+        recommended_action: (String(r.recommended_action || "MONITOR") as RobotData["recommended_action"]),
+        action_priority: (String(r.action_priority || "LOW") as RobotData["action_priority"]),
         timestamp: String(r.timestamp || ""),
       }));
 

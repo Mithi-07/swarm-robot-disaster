@@ -47,19 +47,32 @@ export default function Home() {
   const eqMedCount = useMemo(() => data.filter((r) => r.earthquake_risk === "MEDIUM").length, [data]);
   const eqLowCount = useMemo(() => data.filter((r) => r.earthquake_risk === "LOW").length, [data]);
 
+  // Landslide high-risk robots
+  const highRiskRobots = useMemo(
+    () => data.filter((r) => r.risk_level === "HIGH").map((r) => r.robot_id),
+    [data]
+  );
+
   // Earthquake high-risk robots
   const eqHighRobots = useMemo(
     () => data.filter((r) => r.earthquake_risk === "HIGH").map((r) => r.robot_id),
     [data]
   );
 
-  // Alert sound — with earthquake support
+  // Robot action map for alerts
+  const robotActions = useMemo(() => {
+    const map: Record<string, string> = {};
+    data.forEach((r) => { map[r.robot_id] = r.recommended_action.replace(/_/g, " "); });
+    return map;
+  }, [data]);
+
+  // Alert sound — per-robot with actual recommended actions
   const { isAlerting, alertDetails, acknowledge } = useAlertSound(
-    highRiskCount > 0,
+    highRiskRobots,
     lowBatteryRobots,
     criticalBatteryRobots,
-    eqHighCount > 0,
-    eqHighRobots
+    eqHighRobots,
+    robotActions
   );
 
   // Loading state
@@ -165,6 +178,16 @@ export default function Home() {
                       <p className={`mt-1 text-sm ${detail.severity === "critical" ? "text-red-300" : "text-amber-300"}`}>
                         {detail.message}
                       </p>
+                      {detail.action && (
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <span className="text-[10px]" style={{ color: "var(--text-faint)" }}>Action:</span>
+                          <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                            detail.severity === "critical" ? "bg-red-500/20 text-red-400" : "bg-amber-500/20 text-amber-400"
+                          }`}>
+                            {detail.action}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -300,6 +323,57 @@ export default function Home() {
           <div className="animate-fade-in space-y-6">
             <HighRiskAlerts robots={data} newHighRisk={newHighRisk} />
             <RiskSummaryCards lowCount={lowRiskCount} mediumCount={mediumRiskCount} highCount={highRiskCount} />
+
+            {/* Per-robot landslide risk scores */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-amber-400">
+                  <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495z" clipRule="evenodd" />
+                </svg>
+                <h3 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>Robot Landslide Risk Scores</h3>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {data.map((robot) => {
+                  const riskLevel = robot.risk_level;
+                  const isHigh = riskLevel === "HIGH";
+                  const isMed = riskLevel === "MEDIUM";
+                  return (
+                    <div
+                      key={`ls-${robot.robot_id}`}
+                      className={`rounded-xl border p-4 backdrop-blur-sm transition-all ${
+                        isHigh ? "border-red-500/30 bg-red-500/5" : isMed ? "border-amber-500/20 bg-amber-500/5" : "border-emerald-500/20 bg-emerald-500/5"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-mono text-sm font-bold" style={{ color: "var(--text-primary)" }}>{robot.robot_id}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          isHigh ? "bg-red-500/20 text-red-400" : isMed ? "bg-amber-500/20 text-amber-400" : "bg-emerald-500/20 text-emerald-400"
+                        }`}>
+                          {riskLevel}
+                        </span>
+                      </div>
+                      <div className={`text-3xl font-black ${isHigh ? "text-red-400" : isMed ? "text-amber-400" : "text-emerald-400"}`}>
+                        {robot.risk_score.toFixed(0)}
+                        <span className="text-sm font-normal text-slate-500 ml-1">%</span>
+                      </div>
+                      <div className="mt-1 text-xs" style={{ color: "var(--text-faint)" }}>Moisture: {robot.soil_moisture.toFixed(1)}% · Tilt: {robot.tilt.toFixed(1)}°</div>
+                      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
+                        <div className={`h-full rounded-full transition-all duration-500 ${isHigh ? "bg-red-500" : isMed ? "bg-amber-500" : "bg-emerald-500"}`} style={{ width: `${Math.min(robot.risk_score, 100)}%` }} />
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[10px] font-mono" style={{ color: "var(--text-faint)" }}>📍 {robot.latitude.toFixed(4)}, {robot.longitude.toFixed(4)}</span>
+                        <span className={`text-[9px] font-bold ${
+                          robot.action_priority === "URGENT" ? "text-red-400" :
+                          robot.action_priority === "HIGH" ? "text-orange-400" :
+                          robot.action_priority === "MEDIUM" ? "text-amber-400" : "text-emerald-400"
+                        }`}>{robot.recommended_action.replace(/_/g, " ")}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             <RobotMap robots={data} mode="landslide" />
             <SensorCharts robots={data} mode="landslide" />
           </div>
@@ -309,6 +383,7 @@ export default function Home() {
         {activePage === "earthquake" && (
           <div className="animate-fade-in space-y-6">
             <EarthquakeAlert status={earthquakeStatus} />
+            <RiskSummaryCards lowCount={eqLowCount} mediumCount={eqMedCount} highCount={eqHighCount} />
 
             {/* Per-robot vibration cards */}
             <div className="space-y-3">
@@ -346,8 +421,13 @@ export default function Home() {
                       <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
                         <div className={`h-full rounded-full transition-all duration-500 ${isHigh ? "bg-orange-500" : isMed ? "bg-yellow-500" : "bg-emerald-500"}`} style={{ width: `${Math.min(robot.earthquake_score * 100, 100)}%` }} />
                       </div>
-                      <div className="mt-2 text-[10px] text-slate-600 font-mono">
-                        📍 {robot.latitude.toFixed(4)}, {robot.longitude.toFixed(4)}
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[10px] font-mono" style={{ color: "var(--text-faint)" }}>📍 {robot.latitude.toFixed(4)}, {robot.longitude.toFixed(4)}</span>
+                        <span className={`text-[9px] font-bold ${
+                          robot.action_priority === "URGENT" ? "text-red-400" :
+                          robot.action_priority === "HIGH" ? "text-orange-400" :
+                          robot.action_priority === "MEDIUM" ? "text-amber-400" : "text-emerald-400"
+                        }`}>{robot.recommended_action.replace(/_/g, " ")}</span>
                       </div>
                     </div>
                   );

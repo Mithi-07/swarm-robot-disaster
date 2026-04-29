@@ -14,5 +14,7 @@ export interface RobotData {
   charging_required: boolean;
   earthquake_risk: "LOW" | "MEDIUM" | "HIGH";
   earthquake_score: number;
+  recommended_action: "MONITOR" | "MONITOR_CLOSELY" | "ALERT_AUTHORITIES" | "EVACUATE" | "RETURN_TO_BASE";
+  action_priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   timestamp: string;
 }
